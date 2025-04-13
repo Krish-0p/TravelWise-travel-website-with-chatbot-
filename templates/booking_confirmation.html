@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    {% if booking.booking_type == 'hotel' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('hotels') }}">Hotels</a></li>
+                    {% elif booking.booking_type == 'flight' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('flights') }}">Flights</a></li>
+                    {% elif booking.booking_type == 'package' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('packages') }}">Packages</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active">Booking Confirmation</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4 text-center">
+            <h2>Booking Confirmed!</h2>
+            <div class="booking-steps my-4">
+                <div class="step completed">
+                    <div class="step-number"><i class="fas fa-check"></i></div>
+                    <div class="step-title">Details</div>
+                </div>
+                <div class="step-connector completed"></div>
+                <div class="step completed">
+                    <div class="step-number"><i class="fas fa-check"></i></div>
+                    <div class="step-title">Verification</div>
+                </div>
+                <div class="step-connector completed"></div>
+                <div class="step completed">
+                    <div class="step-number"><i class="fas fa-check"></i></div>
+                    <div class="step-title">Confirmation</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="success-animation">
+                            <div class="success-circle">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                        <h4 class="mt-3">Thank You for Your Booking!</h4>
+                        <p class="text-muted">Your booking has been successfully confirmed.</p>
+                    </div>
+                    
+                    <div class="booking-details p-3 rounded mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-3">Booking Information</h5>
+                                <p><strong>Booking ID:</strong> #{{ booking.id }}</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="badge bg-success">
+                                        Confirmed
+                                    </span>
+                                </p>
+                                <p><strong>Booking Date:</strong> {{ booking.booking_date.strftime('%B %d, %Y') }}</p>
+                                <p><strong>Start Date:</strong> {{ booking.start_date.strftime('%B %d, %Y') }}</p>
+                                {% if booking.end_date %}
+                                <p><strong>End Date:</strong> {{ booking.end_date.strftime('%B %d, %Y') }}</p>
+                                {% endif %}
+                                <p><strong>Guests:</strong> {{ booking.adults }} Adults, {{ booking.children }} Children</p>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5 class="mb-3">
+                                    {% if booking.booking_type == 'hotel' %}
+                                    Hotel Details
+                                    {% elif booking.booking_type == 'flight' %}
+                                    Flight Details
+                                    {% elif booking.booking_type == 'package' %}
+                                    Package Details
+                                    {% endif %}
+                                </h5>
+                                
+                                {% if booking.booking_type == 'hotel' %}
+                                <p><strong>Hotel:</strong> {{ item.name }}</p>
+                                <p><strong>Location:</strong> {{ item.location }}</p>
+                                <p><strong>Rating:</strong> 
+                                    {% for i in range(item.rating|int) %}
+                                    <i class="fas fa-star text-warning"></i>
+                                    {% endfor %}
+                                    {% if item.rating % 1 != 0 %}
+                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                    {% endif %}
+                                </p>
+                                {% elif booking.booking_type == 'flight' %}
+                                <p><strong>Airline:</strong> {{ item.airline }}</p>
+                                <p><strong>Flight:</strong> {{ item.departure_city }} to {{ item.arrival_city }}</p>
+                                <p><strong>Departure:</strong> {{ item.departure_time.strftime('%B %d, %Y at %H:%M') }}</p>
+                                <p><strong>Arrival:</strong> {{ item.arrival_time.strftime('%B %d, %Y at %H:%M') }}</p>
+                                {% elif booking.booking_type == 'package' %}
+                                <p><strong>Package:</strong> {{ item.name }}</p>
+                                <p><strong>Destination:</strong> {{ item.destination }}</p>
+                                <p><strong>Duration:</strong> {{ item.duration }} days</p>
+                                <p><strong>Included Services:</strong> {{ item.included_services }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-info p-3 rounded mb-4">
+                        <h5 class="mb-3">Payment Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Total Amount:</strong> ₹{{ booking.total_price }}</p>
+                                <p><strong>Payment Status:</strong> <span class="badge bg-warning">Pending</span></p>
+                                <p><strong>Payment Due:</strong> {{ (booking.booking_date + timedelta(days=3)).strftime('%B %d, %Y') }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Please complete your payment within 3 days to secure your booking.
+                                </p>
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-credit-card me-2"></i> Make Payment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p>An email with all details has been sent to <strong>{{ current_user.email }}</strong>.</p>
+                        <div class="mt-3">
+                            <a href="{{ url_for('profile') }}" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-user me-1"></i> View Your Bookings
+                            </a>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-1"></i> Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.booking-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bs-secondary);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.step.active .step-number {
+    background-color: var(--bs-primary);
+}
+
+.step.completed .step-number {
+    background-color: var(--bs-success);
+}
+
+.step-connector {
+    width: 80px;
+    height: 2px;
+    background-color: var(--bs-secondary);
+    margin: 0 10px;
+}
+
+.step-connector.completed {
+    background-color: var(--bs-success);
+}
+
+.success-animation {
+    margin: 20px auto;
+}
+
+.success-circle {
+    width: 80px;
+    height: 80px;
+    background-color: var(--bs-success);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    animation: pulse 1.5s infinite;
+}
+
+.success-circle i {
+    font-size: 40px;
+    color: white;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(var(--bs-success-rgb), 0.7);
+    }
+    
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(var(--bs-success-rgb), 0);
+    }
+    
+    100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(var(--bs-success-rgb), 0);
+    }
+}
+
+.booking-details, .payment-info {
+    background-color: var(--bs-dark);
+    border: 1px solid var(--bs-border-color);
+}
+</style>
+{% endblock %}

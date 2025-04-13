@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <h1>Travel Packages</h1>
+    <p class="lead">Explore our curated travel packages for unforgettable experiences</p>
+</div>
+
+<!-- Filter Section -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form class="row g-3">
+                    <div class="col-md-4">
+                        <label for="destination" class="form-label">Destination</label>
+                        <input type="text" class="form-control" id="destination" placeholder="Where would you like to go?">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="duration" class="form-label">Duration</label>
+                        <select class="form-select" id="duration">
+                            <option selected value="">Any Duration</option>
+                            <option value="1-3">1-3 Days</option>
+                            <option value="4-7">4-7 Days</option>
+                            <option value="8-14">8-14 Days</option>
+                            <option value="15+">15+ Days</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="budget" class="form-label">Budget</label>
+                        <select class="form-select" id="budget">
+                            <option selected value="">Any Budget</option>
+                            <option value="economy">Economy</option>
+                            <option value="standard">Standard</option>
+                            <option value="premium">Premium</option>
+                            <option value="luxury">Luxury</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Package Listings -->
+<div class="row">
+    {% if packages %}
+        {% for package in packages %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ package.name }}</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        <span>{{ package.destination }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="badge bg-info me-2">{{ package.duration }} Days</span>
+                        {% if package.price < 1000 %}
+                            <span class="badge bg-success">Economy</span>
+                        {% elif package.price < 2000 %}
+                            <span class="badge bg-primary">Standard</span>
+                        {% elif package.price < 3000 %}
+                            <span class="badge bg-warning">Premium</span>
+                        {% else %}
+                            <span class="badge bg-danger">Luxury</span>
+                        {% endif %}
+                    </div>
+                    <p class="card-text">{{ package.description }}</p>
+                    <div class="mt-3">
+                        <h6>What's Included:</h6>
+                        <ul class="list-unstyled">
+                            {% for service in package.included_services.split(',') %}
+                                <li><i class="fas fa-check text-success me-2"></i>{{ service.strip() }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="text-primary fw-bold fs-4">₹{{ "%.2f"|format(package.price) }}</span>
+                        <span class="text-muted">per person</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="d-grid">
+                        <a href="{{ url_for('booking_step1', booking_type='package', item_id=package.id) }}" class="btn btn-primary">Book Package</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No travel packages found. Please try adjusting your search criteria.
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if packages and packages|length > 9 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+        </li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item">
+            <a class="page-link" href="#">Next</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

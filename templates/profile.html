@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow border-0 mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">Profile Information</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle mb-3">
+                        <span class="initials">{{ current_user.first_name[0] if current_user.first_name else '' }}{{ current_user.last_name[0] if current_user.last_name else '' }}</span>
+                    </div>
+                    <h5>{{ current_user.first_name }} {{ current_user.last_name }}</h5>
+                    <p class="text-muted">@{{ current_user.username }}</p>
+                </div>
+                
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Email</span>
+                        <span class="text-muted">{{ current_user.email }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Member Since</span>
+                        <span class="text-muted">{{ current_user.created_at.strftime('%B %d, %Y') }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="d-block mb-2">Email Notifications</span>
+                        <div class="form-check form-switch mb-1">
+                            <input class="form-check-input" type="checkbox" id="booking_notifications" checked disabled>
+                            <label class="form-check-label text-muted" for="booking_notifications">Booking confirmations and updates</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="security_notifications" checked disabled>
+                            <label class="form-check-label text-muted" for="security_notifications">Security alerts and password changes</label>
+                        </div>
+                        <div class="small text-muted mt-2">
+                            <i class="fas fa-info-circle me-1"></i> Email notifications are required for account security
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="fas fa-edit me-1"></i> Edit Profile
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="fas fa-key me-1"></i> Change Password
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">My Bookings</h4>
+            </div>
+            <div class="card-body">
+                {% if bookings %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in bookings %}
+                            <tr>
+                                <td>#{{ booking.id }}</td>
+                                <td>
+                                    {% if booking.booking_type == 'hotel' %}
+                                    <span class="badge bg-primary"><i class="fas fa-hotel me-1"></i> Hotel</span>
+                                    {% elif booking.booking_type == 'flight' %}
+                                    <span class="badge bg-info"><i class="fas fa-plane me-1"></i> Flight</span>
+                                    {% elif booking.booking_type == 'package' %}
+                                    <span class="badge bg-success"><i class="fas fa-suitcase me-1"></i> Package</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ booking.booking_date.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    {% if booking.status == 'confirmed' %}
+                                    <span class="badge bg-success">Confirmed</span>
+                                    {% elif booking.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif booking.status == 'cancelled' %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>₹{{ booking.total_price }}</td>
+                                <td>
+                                    <a href="{{ url_for('manage_booking', booking_id=booking.id) }}" class="btn btn-sm btn-outline-primary">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                    <h5>No Bookings Yet</h5>
+                    <p class="text-muted">You haven't made any bookings yet. Start by exploring our offers!</p>
+                    <div class="mt-3">
+                        <a href="{{ url_for('hotels') }}" class="btn btn-primary me-2">
+                            <i class="fas fa-hotel me-1"></i> Browse Hotels
+                        </a>
+                        <a href="{{ url_for('flights') }}" class="btn btn-info">
+                            <i class="fas fa-plane me-1"></i> Find Flights
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('update_profile') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="edit_username" name="username" value="{{ current_user.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" value="{{ current_user.email }}" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="edit_first_name" name="first_name" value="{{ current_user.first_name or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="edit_last_name" name="last_name" value="{{ current_user.last_name or '' }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('change_password') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_new_password" class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    background-color: var(--bs-primary);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.initials {
+    font-size: 32px;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    {% if booking_type == 'hotel' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('hotels') }}">Hotels</a></li>
+                    {% elif booking_type == 'flight' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('flights') }}">Flights</a></li>
+                    {% elif booking_type == 'package' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('packages') }}">Packages</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active">Booking</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4 text-center">
+            <h2>Complete Your Booking</h2>
+            <div class="booking-steps my-4">
+                <div class="step active">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Details</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Verification</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Confirmation</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Booking Details</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('booking_step1', booking_type=booking_type, item_id=item.id) }}">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="start_date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start_date" name="start_date" required min="{{ today }}">
+                            </div>
+                            {% if booking_type != 'flight' or booking_type == 'package' %}
+                            <div class="col-md-6">
+                                <label for="end_date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date" required min="{{ today }}">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="adults" class="form-label">Adults</label>
+                                <select class="form-select" id="adults" name="adults" required>
+                                    {% for i in range(1, 6) %}
+                                    <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="children" class="form-label">Children</label>
+                                <select class="form-select" id="children" name="children">
+                                    {% for i in range(0, 5) %}
+                                    <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label for="special_requests" class="form-label">Special Requests/Notes</label>
+                            <textarea class="form-control" id="special_requests" name="special_requests" rows="3" placeholder="Any special requirements or preferences?"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">Continue to Verification</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Booking Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if booking_type == 'hotel' %}
+                    <div class="d-flex align-items-center mb-3">
+                        {% if item.image_url %}
+                        <img src="{{ item.image_url }}" alt="{{ item.name }}" class="me-3 rounded summary-image">
+                        {% else %}
+                        <div class="placeholder-image me-3 rounded">
+                            <i class="fas fa-hotel"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-0">{{ item.name }}</h5>
+                            <p class="text-muted mb-0">{{ item.location }}</p>
+                            <div class="rating mt-1">
+                                {% for i in range(item.rating|int) %}
+                                <i class="fas fa-star text-warning"></i>
+                                {% endfor %}
+                                {% if item.rating % 1 != 0 %}
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% elif booking_type == 'flight' %}
+                    <div class="flight-info mb-3">
+                        <h5 class="mb-2">{{ item.airline }}</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="text-center">
+                                <h6 class="mb-0">{{ item.departure_time.strftime('%H:%M') }}</h6>
+                                <small class="text-muted">{{ item.departure_city }}</small>
+                            </div>
+                            <div class="flex-grow-1 px-3 text-center">
+                                <div class="flight-path">
+                                    <i class="fas fa-plane"></i>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <h6 class="mb-0">{{ item.arrival_time.strftime('%H:%M') }}</h6>
+                                <small class="text-muted">{{ item.arrival_city }}</small>
+                            </div>
+                        </div>
+                        <div class="text-muted">
+                            <small>{{ item.departure_time.strftime('%a, %b %d, %Y') }}</small>
+                        </div>
+                    </div>
+                    {% elif booking_type == 'package' %}
+                    <div class="d-flex align-items-center mb-3">
+                        {% if item.image_url %}
+                        <img src="{{ item.image_url }}" alt="{{ item.name }}" class="me-3 rounded summary-image">
+                        {% else %}
+                        <div class="placeholder-image me-3 rounded">
+                            <i class="fas fa-suitcase"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-0">{{ item.name }}</h5>
+                            <p class="text-muted mb-0">{{ item.destination }}</p>
+                            <small class="badge bg-info">{{ item.duration }} Days</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="pricing mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Base Price</span>
+                            <span>₹{{ item.price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Taxes & Fees</span>
+                            <span>₹{{ (item.price|float * 0.12)|round(2) }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Total</span>
+                            <span>₹{{ (item.price|float * 1.12)|round(2) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary mt-3">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        <small>No payment required now. You will receive a confirmation with payment details.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.booking-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bs-secondary);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.step.active .step-number {
+    background-color: var(--bs-primary);
+}
+
+.step-connector {
+    width: 80px;
+    height: 2px;
+    background-color: var(--bs-secondary);
+    margin: 0 10px;
+}
+
+.summary-image, .placeholder-image {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.placeholder-image {
+    background-color: var(--bs-secondary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+}
+
+.flight-path {
+    position: relative;
+    height: 2px;
+    background-color: var(--bs-secondary);
+}
+
+.flight-path i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    font-size: 14px;
+    color: var(--bs-info);
+}
+</style>
+{% endblock %}

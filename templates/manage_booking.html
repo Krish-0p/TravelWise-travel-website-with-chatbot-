@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('profile') }}">My Profile</a></li>
+                    <li class="breadcrumb-item active">Booking #{{ booking.id }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+                    <h4 class="card-title mb-0">Booking Details</h4>
+                    <div class="booking-status">
+                        {% if booking.status == 'confirmed' %}
+                        <span class="badge bg-success">Confirmed</span>
+                        {% elif booking.status == 'pending' %}
+                        <span class="badge bg-warning">Pending</span>
+                        {% elif booking.status == 'cancelled' %}
+                        <span class="badge bg-danger">Cancelled</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Booking Information</h5>
+                            <p><strong>Booking ID:</strong> #{{ booking.id }}</p>
+                            <p><strong>Booking Date:</strong> {{ booking.booking_date.strftime('%B %d, %Y') }}</p>
+                            <p><strong>Start Date:</strong> {{ booking.start_date.strftime('%B %d, %Y') }}</p>
+                            {% if booking.end_date %}
+                            <p><strong>End Date:</strong> {{ booking.end_date.strftime('%B %d, %Y') }}</p>
+                            {% endif %}
+                            <p><strong>Guests:</strong> {{ booking.adults }} Adults, {{ booking.children }} Children</p>
+                            <p><strong>Total Price:</strong> ${{ booking.total_price }}</p>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5 class="mb-3">
+                                {% if booking.booking_type == 'hotel' %}
+                                Hotel Details
+                                {% elif booking.booking_type == 'flight' %}
+                                Flight Details
+                                {% elif booking.booking_type == 'package' %}
+                                Package Details
+                                {% endif %}
+                            </h5>
+                            
+                            {% if booking.booking_type == 'hotel' %}
+                            <div class="d-flex align-items-center mb-3">
+                                {% if item.image_url %}
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}" class="me-3 rounded" style="width: 80px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                <div class="placeholder-image me-3 rounded">
+                                    <i class="fas fa-hotel"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h5 class="mb-0">{{ item.name }}</h5>
+                                    <p class="text-muted mb-0">{{ item.location }}</p>
+                                </div>
+                            </div>
+                            <p><strong>Rating:</strong> 
+                                {% for i in range(item.rating|int) %}
+                                <i class="fas fa-star text-warning"></i>
+                                {% endfor %}
+                                {% if item.rating % 1 != 0 %}
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                                {% endif %}
+                            </p>
+                            <p><strong>Description:</strong> {{ item.description }}</p>
+                            
+                            {% elif booking.booking_type == 'flight' %}
+                            <h5 class="mb-2">{{ item.airline }}</h5>
+                            <div class="flight-info p-3 mb-3 rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="text-center">
+                                        <h6 class="mb-0">{{ item.departure_time.strftime('%H:%M') }}</h6>
+                                        <small class="text-muted">{{ item.departure_city }}</small>
+                                    </div>
+                                    <div class="flex-grow-1 px-3 text-center">
+                                        <div class="flight-path">
+                                            <i class="fas fa-plane"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <h6 class="mb-0">{{ item.arrival_time.strftime('%H:%M') }}</h6>
+                                        <small class="text-muted">{{ item.arrival_city }}</small>
+                                    </div>
+                                </div>
+                                <div class="text-muted mt-2">
+                                    <small>Date: {{ item.departure_time.strftime('%a, %b %d, %Y') }}</small>
+                                </div>
+                            </div>
+                            {% if item.description %}
+                            <p><strong>Description:</strong> {{ item.description }}</p>
+                            {% endif %}
+                            
+                            {% elif booking.booking_type == 'package' %}
+                            <div class="d-flex align-items-center mb-3">
+                                {% if item.image_url %}
+                                <img src="{{ item.image_url }}" alt="{{ item.name }}" class="me-3 rounded" style="width: 80px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                <div class="placeholder-image me-3 rounded">
+                                    <i class="fas fa-suitcase"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h5 class="mb-0">{{ item.name }}</h5>
+                                    <p class="text-muted mb-0">{{ item.destination }}</p>
+                                    <small class="badge bg-info">{{ item.duration }} Days</small>
+                                </div>
+                            </div>
+                            <p><strong>Description:</strong> {{ item.description }}</p>
+                            <p><strong>Included Services:</strong> {{ item.included_services }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="booking-actions d-flex justify-content-between mt-4">
+                        <div>
+                            <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Bookings
+                            </a>
+                        </div>
+                        
+                        <div>
+                            {% if booking.status != 'cancelled' %}
+                            <button class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#modifyBookingModal">
+                                <i class="fas fa-edit me-1"></i> Modify
+                            </button>
+                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelBookingModal">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </button>
+                            {% else %}
+                            <button class="btn btn-success" disabled>
+                                <i class="fas fa-redo me-1"></i> Rebook
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Payment Status</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-credit-card fa-3x text-primary"></i>
+                        <h5 class="mt-3">Payment Details</h5>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Amount Due:</span>
+                        <span>₹{{ booking.total_price }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Status:</span>
+                        <span class="badge bg-warning">Pending</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Due Date:</span>
+                        <span>{{ (booking.booking_date + timedelta(days=3)).strftime('%b %d, %Y') }}</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-credit-card me-1"></i> Make Payment
+                        </button>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i> Payment must be completed 
+                            before the due date to confirm your booking.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Need Help?</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="mb-3">If you have any questions or need assistance with your booking, 
+                       our customer support team is here to help.</p>
+                    
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-envelope me-2 text-primary"></i> 
+                            <a href="mailto:support@TravelWise.com" class="text-decoration-none">support@TravelWise.com</a>
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-phone me-2 text-primary"></i> 
+                            +1 (555) 123-4567
+                        </li>
+                        <li>
+                            <i class="fas fa-comment me-2 text-primary"></i> 
+                            <a href="#" class="text-decoration-none" id="chatbot-trigger">Live Chat</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modify Booking Modal -->
+<div class="modal fade" id="modifyBookingModal" tabindex="-1" aria-labelledby="modifyBookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modifyBookingModalLabel">Modify Booking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('update_booking', booking_id=booking.id) }}">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Modifying your booking may result in price changes or availability issues.
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" 
+                                   value="{{ booking.start_date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        {% if booking.booking_type != 'flight' %}
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" 
+                                   value="{{ booking.end_date.strftime('%Y-%m-%d') if booking.end_date else '' }}" required>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="adults" class="form-label">Adults</label>
+                            <select class="form-select" id="adults" name="adults" required>
+                                {% for i in range(1, 6) %}
+                                <option value="{{ i }}" {% if booking.adults == i %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="children" class="form-label">Children</label>
+                            <select class="form-select" id="children" name="children">
+                                {% for i in range(0, 5) %}
+                                <option value="{{ i }}" {% if booking.children == i %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmModify" name="confirm" required>
+                        <label class="form-check-label" for="confirmModify">
+                            I understand that modifying this booking may result in changes to the price or availability.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div class="modal fade" id="cancelBookingModal" tabindex="-1" aria-labelledby="cancelBookingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelBookingModalLabel">Cancel Booking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{{ url_for('cancel_booking', booking_id=booking.id) }}">
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Are you sure you want to cancel this booking? This action cannot be undone.
+                    </div>
+                    
+                    <p>Booking details:</p>
+                    <ul>
+                        <li><strong>Booking ID:</strong> #{{ booking.id }}</li>
+                        <li><strong>Type:</strong> {{ booking.booking_type|capitalize }}</li>
+                        <li><strong>Start Date:</strong> {{ booking.start_date.strftime('%B %d, %Y') }}</li>
+                        <li><strong>Total Amount:</strong> ₹{{ booking.total_price }}</li>
+                    </ul>
+                    
+                    <div class="form-group mb-3">
+                        <label for="cancellationReason" class="form-label">Reason for Cancellation</label>
+                        <select class="form-select" id="cancellationReason" name="reason" required>
+                            <option value="">Select a reason...</option>
+                            <option value="change_plans">Change of plans</option>
+                            <option value="found_alternative">Found better alternative</option>
+                            <option value="schedule_conflict">Schedule conflict</option>
+                            <option value="emergency">Emergency situation</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-3" id="otherReasonGroup" style="display: none;">
+                        <label for="otherReason" class="form-label">Please specify:</label>
+                        <textarea class="form-control" id="otherReason" name="other_reason" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmCancel" name="confirm" required>
+                        <label class="form-check-label" for="confirmCancel">
+                            I understand that cancelling this booking may be subject to cancellation policies and fees.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show/hide other reason field based on cancellation reason selection
+        const reasonSelect = document.getElementById('cancellationReason');
+        const otherReasonGroup = document.getElementById('otherReasonGroup');
+        
+        if (reasonSelect && otherReasonGroup) {
+            reasonSelect.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    otherReasonGroup.style.display = 'block';
+                } else {
+                    otherReasonGroup.style.display = 'none';
+                }
+            });
+        }
+        
+        // Trigger chatbot when clicking on Live Chat link
+        const chatbotTrigger = document.getElementById('chatbot-trigger');
+        const chatbotToggle = document.getElementById('chatbot-toggle');
+        
+        if (chatbotTrigger && chatbotToggle) {
+            chatbotTrigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                chatbotToggle.click();
+            });
+        }
+    });
+</script>
+{% endblock %}
+
+{% block styles %}
+<style>
+.placeholder-image {
+    width: 80px;
+    height: 60px;
+    background-color: var(--bs-secondary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+}
+
+.flight-info {
+    background-color: var(--bs-dark);
+    border: 1px solid var(--bs-border-color);
+}
+
+.flight-path {
+    position: relative;
+    height: 2px;
+    background-color: var(--bs-secondary);
+}
+
+.flight-path i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    font-size: 14px;
+    color: var(--bs-info);
+}
+</style>
+{% endblock %}

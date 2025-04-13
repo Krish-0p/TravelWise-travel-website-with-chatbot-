@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+                    {% if booking_data.booking_type == 'hotel' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('hotels') }}">Hotels</a></li>
+                    {% elif booking_data.booking_type == 'flight' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('flights') }}">Flights</a></li>
+                    {% elif booking_data.booking_type == 'package' %}
+                    <li class="breadcrumb-item"><a href="{{ url_for('packages') }}">Packages</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active">Booking Verification</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4 text-center">
+            <h2>Verify Your Booking</h2>
+            <div class="booking-steps my-4">
+                <div class="step completed">
+                    <div class="step-number"><i class="fas fa-check"></i></div>
+                    <div class="step-title">Details</div>
+                </div>
+                <div class="step-connector completed"></div>
+                <div class="step active">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Verification</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Confirmation</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">OTP Verification</h5>
+                </div>
+                <div class="card-body text-center p-4">
+                    <div class="mb-4">
+                        <i class="fas fa-envelope-open-text fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="mb-3">Verify Your Email</h5>
+                    <p class="text-muted">
+                        We've sent a one-time password (OTP) to <strong>{{ current_user.email }}</strong>. 
+                        Please enter the 6-digit code below to verify your booking.
+                    </p>
+                    <div class="alert alert-info small" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Tip:</strong> Please check both your inbox and spam folder for the verification email. 
+                        If you don't receive it within a minute, use the "Resend OTP" button below.
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('booking_step2') }}">
+                        <div class="otp-input-container my-4">
+                            <input type="text" name="otp" id="otp" class="form-control otp-input" maxlength="6" placeholder="Enter 6-digit OTP" required>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">Verify & Complete Booking</button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-3">
+                        <p class="text-muted mb-0">Didn't receive the code?</p>
+                        <button type="button" id="resendOtpBtn" class="btn btn-link p-0 text-decoration-none">Resend OTP</button>
+                    </div>
+                    
+                    <script>
+                        document.getElementById('resendOtpBtn').addEventListener('click', function() {
+                            // Redirect to resend OTP route - no booking ID needed
+                            window.location.href = "{{ url_for('resend_otp') }}";
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.booking-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--bs-secondary);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.step.active .step-number {
+    background-color: var(--bs-primary);
+}
+
+.step.completed .step-number {
+    background-color: var(--bs-success);
+}
+
+.step-connector {
+    width: 80px;
+    height: 2px;
+    background-color: var(--bs-secondary);
+    margin: 0 10px;
+}
+
+.step-connector.completed {
+    background-color: var(--bs-success);
+}
+
+.otp-input {
+    letter-spacing: 4px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    max-width: 300px;
+    margin: 0 auto;
+}
+</style>
+{% endblock %}

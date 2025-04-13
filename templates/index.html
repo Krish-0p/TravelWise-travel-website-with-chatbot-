@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5 text-center bg-dark text-white rounded">
+    <h1>Start Your Dream Vacation Today</h1>
+    <p class="lead">Discover the world's most amazing destinations with TravelWise</p>
+    
+    <!-- Search Box -->
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <form action="{{ url_for('search') }}" method="get" class="bg-secondary bg-opacity-25 p-4 rounded">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                                <input type="text" name="query" class="form-control form-control-lg" placeholder="Where do you want to go?">
+                                <button class="btn btn-primary btn-lg" type="submit">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Hotels -->
+<section class="my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Featured Hotels</h2>
+        <a href="{{ url_for('hotels') }}" class="btn btn-outline-primary">View All <i class="fas fa-arrow-right ms-2"></i></a>
+    </div>
+    
+    {% if hotels %}
+    <div class="row">
+        {% for hotel in hotels %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ hotel.name }}</h5>
+                    <p class="card-text"><i class="fas fa-map-marker-alt"></i> {{ hotel.location }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-primary fw-bold">₹{{ "%.2f"|format(hotel.price) }}</span>
+                        <span class="badge bg-success">
+                            <i class="fas fa-star"></i> {{ "%.1f"|format(hotel.rating) }}
+                        </span>
+                    </div>
+                    <p class="card-text mt-2">{{ hotel.description|truncate(100) }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{{ url_for('booking_step1', booking_type='hotel', item_id=hotel.id) }}" class="btn btn-primary w-100">Book Now</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No hotel deals available at the moment. Please check back later.
+    </div>
+    {% endif %}
+</section>
+
+<!-- Featured Flights -->
+<section class="my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Flight Deals</h2>
+        <a href="{{ url_for('flights') }}" class="btn btn-outline-primary">View All <i class="fas fa-arrow-right ms-2"></i></a>
+    </div>
+    
+    {% if flights %}
+    <div class="row">
+        {% for flight in flights %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ flight.airline }}</h5>
+                    <div class="d-flex justify-content-between my-3">
+                        <div>
+                            <p class="mb-0 text-primary">{{ flight.departure_city }}</p>
+                            <small>{{ flight.departure_time.strftime('%H:%M') }}</small>
+                        </div>
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="fas fa-plane"></i>
+                            <div class="border-top border-secondary my-1" style="width: 50px;"></div>
+                        </div>
+                        <div>
+                            <p class="mb-0 text-primary">{{ flight.arrival_city }}</p>
+                            <small>{{ flight.arrival_time.strftime('%H:%M') }}</small>
+                        </div>
+                    </div>
+                    <p class="card-text">{{ flight.description|truncate(100) }}</p>
+                    <div class="text-end">
+                        <span class="text-primary fw-bold">₹{{ "%.2f"|format(flight.price) }}</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{{ url_for('booking_step1', booking_type='flight', item_id=flight.id) }}" class="btn btn-primary w-100">Book Flight</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No flight deals available at the moment. Please check back later.
+    </div>
+    {% endif %}
+</section>
+
+<!-- Featured Packages -->
+<section class="my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Popular Packages</h2>
+        <a href="{{ url_for('packages') }}" class="btn btn-outline-primary">View All <i class="fas fa-arrow-right ms-2"></i></a>
+    </div>
+    
+    {% if packages %}
+    <div class="row">
+        {% for package in packages %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ package.name }}</h5>
+                    <p class="card-text"><i class="fas fa-map-marker-alt"></i> {{ package.destination }}</p>
+                    <p class="card-text"><i class="fas fa-calendar-alt"></i> {{ package.duration }} days</p>
+                    <p class="card-text mt-2">{{ package.description|truncate(100) }}</p>
+                    <div class="text-end">
+                        <span class="text-primary fw-bold">₹{{ "%.2f"|format(package.price) }}</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <a href="{{ url_for('booking_step1', booking_type='package', item_id=package.id) }}" class="btn btn-primary w-100">Book Package</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No travel packages available at the moment. Please check back later.
+    </div>
+    {% endif %}
+</section>
+
+<!-- Why Choose Us -->
+<section class="my-5 p-4 bg-secondary bg-opacity-10 rounded">
+    <h2 class="text-center mb-4">Why Choose TravelWise</h2>
+    <div class="row text-center">
+        <div class="col-md-3 mb-4">
+            <div class="p-3">
+                <i class="fas fa-rupee-sign fa-3x mb-3 text-primary"></i>
+                <h4>Best Price Guarantee</h4>
+                <p>Find a lower price? We'll match it and give you an additional discount.</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="p-3">
+                <i class="fas fa-headset fa-3x mb-3 text-primary"></i>
+                <h4>24/7 Support</h4>
+                <p>Our customer service team is available around the clock to assist you.</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="p-3">
+                <i class="fas fa-thumbs-up fa-3x mb-3 text-primary"></i>
+                <h4>Trusted by Millions</h4>
+                <p>Join millions of satisfied travelers who book with us every year.</p>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="p-3">
+                <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
+                <h4>Secure Booking</h4>
+                <p>Your payments and personal information are always protected.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
